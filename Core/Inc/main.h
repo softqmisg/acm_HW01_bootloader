@@ -67,8 +67,6 @@ void Error_Handler(void);
 #define GPIO_3_GPIO_Port GPIOE
 #define GPIO_5_Pin GPIO_PIN_6
 #define GPIO_5_GPIO_Port GPIOE
-#define ADC123_IN3_Pin GPIO_PIN_3
-#define ADC123_IN3_GPIO_Port GPIOA
 #define ON_OFF_Pin GPIO_PIN_5
 #define ON_OFF_GPIO_Port GPIOA
 #define CUR_DIR_Pin GPIO_PIN_6
@@ -110,6 +108,39 @@ void Error_Handler(void);
 #define VCNL4200_INT_Pin GPIO_PIN_7
 #define VCNL4200_INT_GPIO_Port GPIOD
 /* USER CODE BEGIN Private defines */
+#define IS_BTN_PRESSED() \
+    ((HAL_GPIO_ReadPin(BTN_1_GPIO_Port, BTN_1_Pin) == GPIO_PIN_RESET) ? 1 : 0)
+
+
+#define LED_G_ON()  HAL_GPIO_WritePin(SEG_A_GPIO_Port, SEG_A_Pin, GPIO_PIN_RESET)
+#define LED_G_OFF() HAL_GPIO_WritePin(SEG_A_GPIO_Port, SEG_A_Pin, GPIO_PIN_SET)
+#define LED_G_TG()  HAL_GPIO_TogglePin(SEG_A_GPIO_Port, SEG_A_Pin)
+
+#define LED_Y_ON()  HAL_GPIO_WritePin(SEG_B_GPIO_Port, SEG_B_Pin, GPIO_PIN_RESET)
+#define LED_Y_OFF() HAL_GPIO_WritePin(SEG_B_GPIO_Port, SEG_B_Pin, GPIO_PIN_SET)
+#define LED_Y_TG()  HAL_GPIO_TogglePin(SEG_B_GPIO_Port, SEG_B_Pin)
+
+#define LED_R_ON()  HAL_GPIO_WritePin(SEG_C_GPIO_Port, SEG_C_Pin, GPIO_PIN_RESET)
+#define LED_R_OFF() HAL_GPIO_WritePin(SEG_C_GPIO_Port, SEG_C_Pin, GPIO_PIN_SET)
+#define LED_R_TG()  HAL_GPIO_TogglePin(SEG_C_GPIO_Port, SEG_C_Pin)
+
+
+#define LED_ALL_ON() \
+    do               \
+    {                \
+        LED_G_ON();  \
+        LED_Y_ON();  \
+        LED_R_ON();  \
+    } while(0)
+#define LED_ALL_OFF() \
+    do                \
+    {                 \
+        LED_G_OFF();  \
+        LED_Y_OFF();  \
+        LED_R_OFF();  \
+    } while(0)
+
+#define CONF_FILENAME "GPP.bin"
 
 /* USER CODE END Private defines */
 

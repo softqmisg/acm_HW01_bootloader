@@ -20,20 +20,20 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "adc.h"
+#include "crc.h"
 #include "dma.h"
 #include "fatfs.h"
-#include "i2c.h"
-#include "iwdg.h"
 #include "rtc.h"
 #include "sdio.h"
-#include "tim.h"
 #include "usb_device.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "usb_device.h"
+#include "usbd_cdc_if.h"
+#include "bootloader.h"
+#include "bootloader_user.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -53,7 +53,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+ uint8_t BTNcounter = 0;
+ uint8_t keystate=0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -65,6 +66,43 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+#ifdef __GNUC__
+/* With GCC/RAISONANCE, small printf (option LD Linker->Libraries->Small printf
+ set to 'Yes') calls __io_putchar() */
+	#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+#else
+	#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+#endif /* __GNUC__ */
+
+/**
+ * @brief Retargets the C library printf function to the USB.
+ * @param None
+ * @retval None
+ */
+extern  USBD_HandleTypeDef hUsbDeviceFS;
+
+PUTCHAR_PROTOTYPE
+{
+	 /* Place your implementation of fputc here */
+	 /* e.g. write a character to the USB VCP and Loop until the end of transmission */
+	//USBD_CDC_SetTxBuffer(&hUsbDeviceFS, &ch, 1);
+	while(!(CDC_Transmit_FS(&ch, 1)==USBD_OK));
+	return ch;
+}
+void GPIO_DeInit(void)
+{
+    HAL_GPIO_DeInit(BTN_1_GPIO_Port, BTN_1_Pin);
+    HAL_GPIO_DeInit(SEG_DIG1_GPIO_Port, SEG_DIG1_Pin);
+    HAL_GPIO_DeInit(SEG_A_GPIO_Port, SEG_A_Pin);
+    HAL_GPIO_DeInit(SEG_B_GPIO_Port, SEG_B_Pin);
+
+    __HAL_RCC_GPIOE_CLK_DISABLE();
+     __HAL_RCC_GPIOC_CLK_DISABLE();
+     __HAL_RCC_GPIOH_CLK_DISABLE();
+     __HAL_RCC_GPIOA_CLK_DISABLE();
+     __HAL_RCC_GPIOB_CLK_DISABLE();
+     __HAL_RCC_GPIOD_CLK_DISABLE();
+}
 /* USER CODE END 0 */
 
 /**
@@ -96,24 +134,128 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  MX_ADC1_Init();
-  MX_I2C1_Init();
   MX_SDIO_SD_Init();
   MX_FATFS_Init();
-  MX_TIM10_Init();
-  MX_TIM9_Init();
   MX_USB_DEVICE_Init();
-  MX_IWDG_Init();
-  MX_TIM11_Init();
   MX_RTC_Init();
+  MX_CRC_Init();
   /* USER CODE BEGIN 2 */
+  HAL_GPIO_WritePin(SEG_DIG1_GPIO_Port,SEG_DIG1_Pin,GPIO_PIN_RESET);
+
+  LED_ALL_ON();
+  HAL_Delay(5000);
+  HAL_Delay(5000);
+  HAL_Delay(5000);
+  printf("Power up, Boot started.\n\r");
+  HAL_Delay(500);
+  LED_ALL_OFF();
+//  if(__HAL_RCC_GET_FLAG(RCC_FLAG_OBLRST))
+//  {
+//      print("OBL flag is active.");
+//#if(CLEAR_RESET_FLAGS)
+//      /* Clear system reset flags */
+//      __HAL_RCC_CLEAR_RESET_FLAGS();
+//      print("Reset flags cleared.");
+//#endif
+//  }
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  while(IS_BTN_PRESSED() && BTNcounter < 90)
+  {
+      if(BTNcounter == 10)
+      {
+          printf("Release button to enter Bootloader.\n\r");
+      }
+      if(BTNcounter == 40)
+      {
+          printf("Release button to enter System Memory.\n\r");
+      }
+
+      if(BTNcounter < 10)
+      {
+          LED_ALL_ON();
+      }
+      else if(BTNcounter == 10)
+      {
+          LED_ALL_OFF();
+      }
+      else if(BTNcounter < 40)
+      {
+          LED_G_TG();
+      }
+      else if(BTNcounter == 40)
+      {
+          LED_G_OFF();
+          LED_Y_ON();
+      }
+      else
+      {
+          LED_Y_TG();
+      }
+
+      BTNcounter++;
+      HAL_Delay(100);
+  }
+
+  LED_ALL_OFF();
+  /* Perform required actions based on button press duration */
+  if(BTNcounter < 90)
+  {
+      if(BTNcounter > 40)
+      {
+          printf("Entering System Memory...\n\r");
+          HAL_Delay(1000);
+          Bootloader_JumpToSysMem();
+      }
+      else if(BTNcounter > 10)
+      {
+          printf("Entering Bootloader...\n\r");
+          Enter_Bootloader();
+      }
+  }
+  /* Check if there is application in user flash area */
+  if(Bootloader_CheckForApplication() == BL_OK)
+  {
+#if(USE_CHECKSUM)
+      /* Verify application checksum */
+      if(Bootloader_VerifyChecksum() != BL_OK)
+      {
+          print("Checksum Error.\n\r");
+          Error_Handler();
+      }
+      else
+      {
+          print("Checksum OK.\n\r");
+      }
+#endif
+
+      printf("Launching Application.\n\r");
+      LED_G_ON();
+      HAL_Delay(1000);
+      LED_G_OFF();
+
+      /* De-initialize bootloader hardware & peripherals */
+      SD_DeInit();
+      GPIO_DeInit();
+      /* Launch application */
+      Bootloader_JumpToApplication();
+  }
+
+  /* No application found */
+  printf("No application in flash.\n\r");
   while (1)
   {
+      LED_R_ON();
+       HAL_Delay(150);
+       LED_R_OFF();
+       HAL_Delay(150);
+       LED_R_ON();
+       HAL_Delay(150);
+       LED_R_OFF();
+       HAL_Delay(1050);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -137,11 +279,9 @@ void SystemClock_Config(void)
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
   /** Initializes the CPU, AHB and APB busses clocks 
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE
-                              |RCC_OSCILLATORTYPE_LSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.LSEState = RCC_LSE_ON;
-  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 25;
