@@ -95,6 +95,7 @@ void GPIO_DeInit(void)
     HAL_GPIO_DeInit(SEG_DIG1_GPIO_Port, SEG_DIG1_Pin);
     HAL_GPIO_DeInit(SEG_A_GPIO_Port, SEG_A_Pin);
     HAL_GPIO_DeInit(SEG_B_GPIO_Port, SEG_B_Pin);
+    HAL_GPIO_DeInit(SEG_C_GPIO_Port, SEG_C_Pin);
 
     __HAL_RCC_GPIOE_CLK_DISABLE();
      __HAL_RCC_GPIOC_CLK_DISABLE();
@@ -149,6 +150,18 @@ int main(void)
   printf("Power up, Boot started.\n\r");
   HAL_Delay(500);
   LED_ALL_OFF();
+  //////////////////////test /////////////////
+  SD_DeInit();
+  MX_DMA_DeInit();
+  MX_USB_DEVICE_DeInit();
+  HAL_RTC_MspDeInit(&hrtc);
+  HAL_CRC_MspDeInit(&hcrc);
+  GPIO_DeInit();
+
+  /* Launch application */
+  Bootloader_JumpToApplication();
+  while(1);
+  ///////////////////////////////////////
 //  if(__HAL_RCC_GET_FLAG(RCC_FLAG_OBLRST))
 //  {
 //      print("OBL flag is active.");
@@ -240,6 +253,10 @@ int main(void)
       /* De-initialize bootloader hardware & peripherals */
       SD_DeInit();
       GPIO_DeInit();
+      MX_DMA_DeInit();
+      MX_USB_DEVICE_DeInit();
+      HAL_RTC_MspDeInit(&hrtc);
+      HAL_CRC_MspDeInit(&hcrc);
       /* Launch application */
       Bootloader_JumpToApplication();
   }

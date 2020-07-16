@@ -23,7 +23,6 @@
 #define BOOTLOADER_VERSION_RC    0 /*!< Release candidate version */
 
 /* Private typedef -----------------------------------------------------------*/
-typedef void (*pFunction)(void); /*!< Function pointer definition */
 
 /* Private variables ---------------------------------------------------------*/
 /** Private variable for tracking flashing progress */
@@ -298,19 +297,22 @@ uint8_t Bootloader_ConfigProtection(uint32_t protection)
     status |= HAL_FLASH_OB_Unlock();
     ////////////////////////////////////////
     ////Mehdi Code
-	OBStruct.Banks=FLASH_BANK_1;
+    uint32_t wrpsectors=0;
+    for(uint8_t sectors=APP_SECTOR_START;sectors<=FLASH_SECTOR_NBPERBANK;sectors++)
+    	wrpsectors|=(uint32_t)(1<<sectors);
+
+    OBStruct.Banks=FLASH_BANK_1;
+	OBStruct.OptionType |=OPTIONBYTE_WRP;
+	OBStruct.WRPSector=wrpsectors;//Write protect disable ALL sectors (app & bootloader)
+
     if(protection & BL_PROTECTION_WRP)
     {
 
-    	OBStruct.OptionType |=OPTIONBYTE_WRP;
     	OBStruct.WRPState=OB_WRPSTATE_ENABLE;
-    	OBStruct.WRPSector=0xffff;//Write protect enable ALL sectors (app & bootloader)
     }
     else
     {
-    	OBStruct.OptionType|=OPTIONBYTE_WRP;
     	OBStruct.WRPState=OB_WRPSTATE_DISABLE;
-    	OBStruct.WRPSector=0xffff;//Write protect disable ALL sectors (app & bootloader)
     }
     status |= HAL_FLASHEx_OBProgram(&OBStruct);
 
@@ -444,7 +446,7 @@ uint8_t Bootloader_VerifyChecksum(void)
  */
 uint8_t Bootloader_CheckForApplication(void)
 {
-    return (((*(uint32_t*)APP_ADDRESS) - RAM_BASE) < RAM_SIZE) ? BL_OK
+    return (((*(uint32_t*)APP_ADDRESS) - RAM_BASE) <= RAM_SIZE) ? BL_OK
                                                                : BL_NO_APP;
 }
 
@@ -475,6 +477,7 @@ void Bootloader_JumpToApplication(void)
 
     __set_MSP(*(__IO uint32_t*)APP_ADDRESS);
     Jump();
+    while(1);
 }
 
 /**

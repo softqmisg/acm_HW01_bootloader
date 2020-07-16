@@ -118,7 +118,7 @@ void Enter_Bootloader(void)
     do
     {
         data = 0xFFFFFFFFFFFFFFFF;
-        fr   = f_read(&SDFile, &data, 8, &num);
+        fr   = f_read(&SDFile, &data, 4, &num);
         if(num)
         {
             status = Bootloader_FlashNext(data);
@@ -128,7 +128,7 @@ void Enter_Bootloader(void)
             }
             else
             {
-                sprintf(msg, "Programming error at: %lu byte\n\r", (cntr * 8));
+                sprintf(msg, "Programming error at: %lu byte\n\r", (cntr * 4));
                 printf(msg);
 
                 f_close(&SDFile);
@@ -153,7 +153,7 @@ void Enter_Bootloader(void)
     LED_G_OFF();
     LED_Y_OFF();
     printf("Programming finished.\n\r");
-    sprintf(msg, "Flashed: %lu bytes.", (cntr * 8));
+    sprintf(msg, "Flashed: %lu bytes.", (cntr * 4));
     printf(msg);
 
     /* Open file for verification */
@@ -243,8 +243,8 @@ uint8_t SD_Init(void)
 
 void SD_DeInit(void)
 {
-	BSP_SD_Init();
-//    FATFS_DeInit();
+	BSP_SD_DeInit();
+    FATFS_DeInit();
     //SDCARD_OFF();
 }
 

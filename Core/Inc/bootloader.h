@@ -16,6 +16,8 @@
 #ifndef __BOOTLOADER_H
 #define __BOOTLOADER_H
 
+typedef void (*pFunction)(void); /*!< Function pointer definition */
+
 /** Bootloader Configuration
  * @defgroup Bootloader_Configuration Bootloader Configuration
  * @{
@@ -45,7 +47,7 @@
 #define CLEAR_RESET_FLAGS 1
 
 /** Start address of application space in flash */
-#define APP_ADDRESS (uint32_t)0x08008000
+#define APP_ADDRESS (uint32_t)0x08010000
 
 /** End address of application space (address of last byte) */
 #define END_ADDRESS (uint32_t)0x080FFFFB
@@ -72,13 +74,13 @@
 
 /** Number of pages per bank in flash */
 //#define FLASH_PAGE_NBPERBANK (256)
-#define FLASH_SECTOR_NBPERBANK	11
-#define APP_SECTOR_START	FLASH_SECTOR_2 //after 32KB of flash
+#define FLASH_SECTOR_NBPERBANK	FLASH_SECTOR_11
+#define APP_SECTOR_START	FLASH_SECTOR_4 //after 32KB of flash
 #define APP_SECTOR_NBR		FLASH_SECTOR_NBPERBANK-	APP_SECTOR_START+1
 
 /* MCU RAM information (to check whether flash contains valid application) */
 #define RAM_BASE SRAM1_BASE     /*!< Start address of RAM */
-#define RAM_SIZE 0x1c000//SRAM1_SIZE_MAX /*!< RAM size in bytes */
+#define RAM_SIZE 0x20000//SRAM1_SIZE_MAX /*!< RAM size in bytes */
 
 #define FLASH_SIZE (uint32_t)0x100000 //1MB
 /* Enumerations --------------------------------------------------------------*/

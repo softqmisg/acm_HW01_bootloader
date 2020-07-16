@@ -40,6 +40,7 @@
 void MX_DMA_Init(void);
 
 /* USER CODE BEGIN Prototypes */
+void MX_DMA_DeInit(void);
 
 /* USER CODE END Prototypes */
 
