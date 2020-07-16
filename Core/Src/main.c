@@ -150,17 +150,33 @@ int main(void)
   printf("Power up, Boot started.\n\r");
   HAL_Delay(500);
   LED_ALL_OFF();
-  //////////////////////test /////////////////
-  SD_DeInit();
-  MX_DMA_DeInit();
-  MX_USB_DEVICE_DeInit();
-  HAL_RTC_MspDeInit(&hrtc);
-  HAL_CRC_MspDeInit(&hcrc);
-  GPIO_DeInit();
-
-  /* Launch application */
-  Bootloader_JumpToApplication();
-  while(1);
+//  //////////////////////test /////////////////
+//  SD_DeInit();
+//  MX_DMA_DeInit();
+//  MX_USB_DEVICE_DeInit();
+//  HAL_RTC_MspDeInit(&hrtc);
+//  HAL_CRC_MspDeInit(&hcrc);
+//  GPIO_DeInit();
+//  uint32_t  JumpAddress = *(__IO uint32_t*)(APP_ADDRESS + 4);
+//  pFunction Jump        = (pFunction)JumpAddress;
+//
+//  HAL_RCC_DeInit();
+//  HAL_DeInit();
+//
+//  SysTick->CTRL = 0;
+//  SysTick->LOAD = 0;
+//  SysTick->VAL  = 0;
+//
+//#if(SET_VECTOR_TABLE)
+//  SCB->VTOR = APP_ADDRESS;
+//#endif
+//
+//  __set_MSP(*(__IO uint32_t*)APP_ADDRESS);
+//  Jump();
+//  while(1);
+//  /* Launch application */
+//  Bootloader_JumpToApplication();
+//  while(1);
   ///////////////////////////////////////
 //  if(__HAL_RCC_GET_FLAG(RCC_FLAG_OBLRST))
 //  {

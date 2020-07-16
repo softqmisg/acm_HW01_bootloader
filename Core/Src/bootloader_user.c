@@ -33,13 +33,14 @@ void Enter_Bootloader(void)
             {
                 printf("Disabling write protection and generating system reset...\n\r");
                 Bootloader_ConfigProtection(BL_PROTECTION_NONE);
+                break;
             }
         }
         LED_R_OFF();
         LED_Y_OFF();
-        printf("Button was not pressed, write protection is still active.\n\r");
-        printf("Exiting Bootloader.\n\r");
-        return;
+//        printf("Button was not pressed, write protection is still active.\n\r");
+//        printf("Exiting Bootloader.\n\r");
+//        return;
     }
 
     /* Initialize SD card */
