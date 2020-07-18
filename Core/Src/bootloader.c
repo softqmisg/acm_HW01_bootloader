@@ -142,8 +142,7 @@ uint8_t Bootloader_FlashNext(uint32_t data)
         return BL_WRITE_ERROR;
     }
 
-    if(HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, flash_ptr, data) ==
-       HAL_OK)
+    if(HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, flash_ptr, data) ==  HAL_OK)
     {
         /* Check the written value */
         if(*(uint32_t*)flash_ptr != data)
@@ -193,9 +192,10 @@ uint8_t Bootloader_GetProtectionStatus(void)
 
     //////////////////////////////////////////
     //Mehdi Code
+
     HAL_FLASHEx_OBGetConfig(&OBStruct);
     /* WRP */
-    if(OBStruct.WRPSector) //3.9.9 reference manual
+    if(OBStruct.WRPSector!=0x7ff) //3.9.9 reference manual
     	protection |= BL_PROTECTION_WRP;
     /* RDP */
     if(OBStruct.RDPLevel != OB_RDP_LEVEL_0)
@@ -303,7 +303,7 @@ uint8_t Bootloader_ConfigProtection(uint32_t protection)
 
     OBStruct.Banks=FLASH_BANK_1;
 	OBStruct.OptionType |=OPTIONBYTE_WRP;
-	OBStruct.WRPSector=wrpsectors;//Write protect disable ALL sectors (app & bootloader)
+	OBStruct.WRPSector=wrpsectors;
 
     if(protection & BL_PROTECTION_WRP)
     {

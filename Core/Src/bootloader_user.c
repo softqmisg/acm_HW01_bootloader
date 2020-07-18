@@ -8,7 +8,7 @@
 #include "bootloader.h"
 #include "bootloader_user.h"
 /*** Bootloader ***************************************************************/
-void Enter_Bootloader(void)
+void Enter_Bootloader(char *filename)
 {
     FRESULT  fr;
     UINT     num;
@@ -23,24 +23,23 @@ void Enter_Bootloader(void)
     if(Bootloader_GetProtectionStatus() & BL_PROTECTION_WRP)
     {
         printf("Application space in flash is write protected.\n\r");
-        printf("Press button to disable flash write protection...\n\r");
-        LED_R_ON();
-        for(i = 0; i < 100; ++i)
-        {
-            LED_Y_TG();
-            HAL_Delay(50);
-            if(IS_BTN_PRESSED())
-            {
-                printf("Disabling write protection and generating system reset...\n\r");
-                Bootloader_ConfigProtection(BL_PROTECTION_NONE);
-                break;
-            }
-        }
+        printf("Disabling write protection and generating system reset...\n\r");
+        Bootloader_ConfigProtection(BL_PROTECTION_NONE);
+//        printf("Press button to disable flash write protection...\n\r");
+//        LED_R_ON();
+//        for(i = 0; i < 100; ++i)
+//        {
+//            LED_Y_TG();
+//            HAL_Delay(50);
+//            if(IS_BTN_PRESSED())
+//            {
+//                printf("Disabling write protection and generating system reset...\n\r");
+//                Bootloader_ConfigProtection(BL_PROTECTION_NONE);
+//                break;
+//            }
+//        }
         LED_R_OFF();
         LED_Y_OFF();
-//        printf("Button was not pressed, write protection is still active.\n\r");
-//        printf("Exiting Bootloader.\n\r");
-//        return;
     }
 
     /* Initialize SD card */
@@ -64,7 +63,7 @@ void Enter_Bootloader(void)
     printf("SD mounted.\n\r");
 
     /* Open file for programming */
-    fr = f_open(&SDFile, CONF_FILENAME, FA_READ);
+    fr = f_open(&SDFile, filename, FA_READ);
     if(fr != FR_OK)
     {
         /* f_open failed */

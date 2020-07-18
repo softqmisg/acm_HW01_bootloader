@@ -8,7 +8,7 @@
 #ifndef INC_BOOTLOADER_USER_H_
 #define INC_BOOTLOADER_USER_H_
 
-void    Enter_Bootloader(void);
+void Enter_Bootloader(char *filename);
 uint8_t SD_Init(void);
 void    SD_DeInit(void);
 void    SD_Eject(void);

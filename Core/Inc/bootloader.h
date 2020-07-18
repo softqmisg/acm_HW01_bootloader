@@ -49,12 +49,19 @@ typedef void (*pFunction)(void); /*!< Function pointer definition */
 /** Start address of application space in flash */
 #define APP_ADDRESS (uint32_t)0x08010000
 
-/** End address of application space (address of last byte) */
-#define END_ADDRESS (uint32_t)0x080FFFFB
-
 /** Start address of application checksum in flash */
 #define CRC_ADDRESS (uint32_t)0x080FFFFC
-
+/** Address of auto program;
+ * 1 value in this address, auto program, 0 value key check
+ * after read this address it will be cleared
+ *  */
+#define AUTOPROG_ADDRESS	(uint32_t)0x080c0004
+/** Address of the device which be used for programming
+ * values:
+ * 0=SDCARD
+ * 1=
+ */
+#define DEVICEPROG_ADDRESS	(uint32_t)0x080c0002
 /** Address of System Memory (ST Bootloader) */
 #define SYSMEM_ADDRESS (uint32_t)0x1FFF0000
 /** @} */
